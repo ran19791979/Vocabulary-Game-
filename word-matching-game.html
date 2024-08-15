@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק התאמת מילים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .word-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .word {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: #e0e0e0;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h2>משחק התאמת מילים אנגלית-עברית</h2>
+        <div id="words"></div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const words = [
+            { english: "song", hebrew: "שיר" },
+            { english: "subject", hebrew: "מקצוע" },
+            { english: "kick", hebrew: "לבעוט" },
+            { english: "piano", hebrew: "פסנתר" },
+            { english: "play", hebrew: "לנגן" },
+            { english: "goal", hebrew: "שער" },
+            { english: "hobby", hebrew: "תחביב" },
+            { english: "Israel", hebrew: "ישראל" },
+            { english: "a lot of", hebrew: "הרבה" },
+            { english: "also", hebrew: "גם" },
+            { english: "far", hebrew: "רחוק" }
+        ];
+
+        let shuffledWords = [...words];
+        let selectedWords = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createWordElements() {
+            const wordsContainer = document.getElementById("words");
+            shuffleArray(shuffledWords);
+            
+            shuffledWords.forEach(word => {
+                const englishElement = document.createElement("div");
+                englishElement.textContent = word.english;
+                englishElement.classList.add("word", "english");
+                englishElement.onclick = () => selectWord(englishElement, word, "english");
+                
+                const hebrewElement = document.createElement("div");
+                hebrewElement.textContent = word.hebrew;
+                hebrewElement.classList.add("word", "hebrew");
+                hebrewElement.onclick = () => selectWord(hebrewElement, word, "hebrew");
+                
+                const wordContainer = document.createElement("div");
+                wordContainer.classList.add("word-container");
+                wordContainer.appendChild(englishElement);
+                wordContainer.appendChild(hebrewElement);
+                
+                wordsContainer.appendChild(wordContainer);
+            });
+        }
+
+        function selectWord(element, word, language) {
+            if (element.classList.contains("selected")) {
+                element.classList.remove("selected");
+                selectedWords = selectedWords.filter(w => w.element !== element);
+            } else {
+                element.classList.add("selected");
+                selectedWords.push({ element, word, language });
+            }
+
+            if (selectedWords.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = selectedWords;
+            const isMatch = first.word === second.word && first.language !== second.language;
+            
+            if (isMatch) {
+                first.element.style.visibility = "hidden";
+                second.element.style.visibility = "hidden";
+                document.getElementById("message").textContent = "כל הכבוד! התאמה נכונה.";
+                
+                if (document.querySelectorAll(".word:not([style*='visibility: hidden'])").length === 0) {
+                    document.getElementById("message").textContent = "כל הכבוד! סיימת את המשחק!";
+                }
+            } else {
+                document.getElementById("message").textContent = "לא מתאים, נסה שוב.";
+                setTimeout(() => {
+                    first.element.classList.remove("selected");
+                    second.element.classList.remove("selected");
+                    document.getElementById("message").textContent = "";
+                }, 1000);
+            }
+            
+            selectedWords = [];
+        }
+
+        createWordElements();
+    </script>
+</body>
+</html>
